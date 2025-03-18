@@ -1,0 +1,6 @@
+Display the board:
+On every frame, display each square in alternating dark and light colors.
+Alternate colors on each square, until you get to the next row, which you will then use the same color as the last color from the previous row.
+So, once the iteration-1 is equal to the number of collums, make sure to set the next color to the current color, rather than the other color.
+All the squares will be added to an array with their proper coordinates and colors, this will all be done upon initialization, to save resources.
+Each square will be given it's coordinate in reference to the board - essentially, a squares coord to be blitted at will be its x, y + board x, y
