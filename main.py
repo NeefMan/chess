@@ -23,7 +23,8 @@ class Game:
             self.clock.tick(self.settings.fps)
 
     def display_board(self):
-        for x, y, color in self.board.squares:
+        for key, color in self.board.squares.items():
+            x, y = key
             pygame.draw.rect(
                 self.screen, 
                 color, 
@@ -46,7 +47,7 @@ class Board:
         # Square
         self.square_width = self.board_width // self.board_collums
         self.square_height = self.board_height // self.board_rows
-        self.squares = []
+        self.squares = {} # (x, y) : color
         
         self.initialize_board()
 
@@ -55,7 +56,7 @@ class Board:
         color2 = self.board_color_dark
         for y in range(0, self.board_height, self.square_height):
             for x in range(0, self.board_width, self.square_width):
-                self.squares.append((x, y, color1))
+                self.squares[(x,y)] = color1
                 if x < self.board_width - self.square_width:
                     color1, color2 = color2, color1
 
