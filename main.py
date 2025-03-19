@@ -28,7 +28,7 @@ class Game:
             pygame.draw.rect(
                 self.screen, 
                 color, 
-                pygame.rect.Rect(x, y, self.board.square_width, self.board.square_height)
+                pygame.rect.Rect(x+self.board.board_x, y+self.board.board_y, self.board.square_width, self.board.square_height)
                 )
 
 

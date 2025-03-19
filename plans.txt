@@ -4,3 +4,33 @@ Alternate colors on each square, until you get to the next row, which you will t
 So, once the iteration-1 is equal to the number of collums, make sure to set the next color to the current color, rather than the other color.
 All the squares will be added to an array with their proper coordinates and colors, this will all be done upon initialization, to save resources.
 Each square will be given it's coordinate in reference to the board - essentially, a squares coord to be blitted at will be its x, y + board x, y
+
+
+What will every piece be able to do?
+-Every piece can move
+-Every piece can be captured
+-Every piece will have a texture
+-No piece can move if that same move would put the king in check
+-No piece can move if the king is already in check and that same move does not take the king out of check
+-Have an x, y pair relating to the square it is in
+
+What can a pawn do?
+-Move forward 2 spaces if it hasn't already moved once
+-Move forward 1 space
+-Capture 1 space diagonally up left and up right
+-Turn into any piece other than the king if it reaches the the last rank
+
+What can a knight do?
+-Move + capture 2 spaces then 1 adjacent space in all cardinal directions
+
+What can a bishop do?
+-Move + capture diagonally in all directions spanning the entire board
+
+What can a rook do?
+-Move + capture in all cardinal directions
+
+What can a queen do?
+-Move + capture in all cardinal directions and diagonals
+
+What can a king do?
+-Move + capture 1 space in all adjacent tiles, unless that same move would put the king in check
