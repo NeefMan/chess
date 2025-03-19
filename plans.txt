@@ -13,6 +13,7 @@ What will every piece be able to do?
 -No piece can move if that same move would put the king in check
 -No piece can move if the king is already in check and that same move does not take the king out of check
 -Have an x, y pair relating to the square it is in
+-Have a 1:1 ratio width and height for ease of scaling to differing squares sizes (a square also has a 1:1 width and height ratio)
 
 What can a pawn do?
 -Move forward 2 spaces if it hasn't already moved once

@@ -8,6 +8,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.clock = pygame.time.Clock()
         self.running = True
+        self.pawn = Pawn("images/pieces/white_pawn.png", 100, 100)
 
     def run(self):
         while self.running:
@@ -18,13 +19,15 @@ class Game:
                     sys.exit()
             
             self.display_board()
+            self.screen.blit(self.pawn.image, (400,400))
 
             pygame.display.flip()
             self.clock.tick(self.settings.fps)
 
     def display_board(self):
-        for key, color in self.board.squares.items():
+        for key, value in self.board.squares.items():
             x, y = key
+            color = value["color"]
             pygame.draw.rect(
                 self.screen, 
                 color, 
@@ -47,7 +50,7 @@ class Board:
         # Square
         self.square_width = self.board_width // self.board_collums
         self.square_height = self.board_height // self.board_rows
-        self.squares = {} # (x, y) : color
+        self.squares = {} # (x, y) : {color, piece[None]}
         
         self.initialize_board()
 
@@ -56,15 +59,21 @@ class Board:
         color2 = self.board_color_dark
         for y in range(0, self.board_height, self.square_height):
             for x in range(0, self.board_width, self.square_width):
-                self.squares[(x,y)] = color1
+                self.squares[(x,y)] = {}
+                self.squares[(x,y)]["color"] = color1
                 if x < self.board_width - self.square_width:
                     color1, color2 = color2, color1
 
 
 
 class Piece:
-    def __init__(self):
-        pass
+    def __init__(self, image, desired_image_width, desired_image_height):
+        self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (desired_image_width, desired_image_height))
+
+
+class Pawn(Piece):
+    def __init__(self, image, desired_image_width, desired_image_height):
+        super().__init__(image, desired_image_width, desired_image_height)
 
 
 class Settings:
