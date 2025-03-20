@@ -56,15 +56,30 @@ class Board:
                     color1, color2 = color2, color1
     
     def initalize_pieces(self, imported_piece_map):
-        image_prefix = "images/pieces/"
+        image_prefix = "images/test_pieces/"
         for key, value in imported_piece_map.piece_map.items():
             x, y = key
             x *= self.square_width
             y *= self.square_height
-            if value == "wp":
-                self.squares[(x,y)]["piece"] = Pawn("w", f"{image_prefix}white_pawn.png", self.square_width, self.square_height)
-            elif value == "bp":
-                self.squares[(x,y)]["piece"] = Pawn("b", f"{image_prefix}black_pawn.png", self.square_width, self.square_height)
+
+            piece_name_abbreviation_map = {
+                "wp": (Pawn, "white_pawn.png"),
+                "bp": (Pawn, "black_pawn.png"),
+                "wb": (Bishop, "white_bishop.png"),
+                "bb": (Bishop, "black_bishop.png"),
+                "wk": (Knight, "white_knight.png"),
+                "bk": (Knight, "black_knight.png"),
+                "wr": (Rook, "white_rook.png"),
+                "br": (Rook, "black_rook.png"),
+                "wq": (Queen, "white_queen.png"),
+                "bq": (Queen, "black_queen.png"),
+                "wki": (King, "white_king.png"),
+                "bki": (King, "black_king.png")
+                }
+            
+            piece_class, file_name = piece_name_abbreviation_map[value]
+            self.squares[(x,y)]["piece"] = piece_class(value, f"images/pieces/{file_name}", self.square_width, self.square_height)
+            
 
     def display_board(self, screen):
         for key, value in self.squares.items():
@@ -83,14 +98,33 @@ class Board:
 
 
 class Piece:
-    def __init__(self, color, image, desired_image_width, desired_image_height):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
         self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (desired_image_width, desired_image_height))
-        self.color = color
-
+        self.color = piece
 
 class Pawn(Piece):
-    def __init__(self, color, image, desired_image_width, desired_image_height):
-        super().__init__(color, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
+
+class Bishop(Piece):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
+
+class Knight(Piece):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
+
+class Rook(Piece):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
+
+class Queen(Piece):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
+
+class King(Piece):
+    def __init__(self, piece, image, desired_image_width, desired_image_height):
+        super().__init__(piece, image, desired_image_width, desired_image_height)
 
 
 class Settings:
