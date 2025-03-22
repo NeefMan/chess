@@ -9,6 +9,7 @@ class Game:
         self.board = Board(self.settings.colors["wheat"], self.settings.colors["brown"])
         self.clock = pygame.time.Clock()
         self.running = True
+        print(self.board.squares)
 
     def run(self):
         while self.running:
