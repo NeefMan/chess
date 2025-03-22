@@ -20,6 +20,7 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     print(self.board.get_square_clicked(event.pos))
                     print()
+                    
             
             self.board.display_board(self.screen)
 
@@ -102,7 +103,10 @@ class Board:
     def get_square_clicked(self, pos):
         x, y = pos
         # Remove right side of number
-        return ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
+        x, y = ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
+        if x < 0 or x > self.board_width-self.square_width or y < 0 or y > self.board_height-self.square_height:
+            return None
+        return (x,y)
 
 
 
