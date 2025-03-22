@@ -9,6 +9,7 @@ class Game:
         self.board = Board(self.settings.colors["wheat"], self.settings.colors["brown"])
         self.clock = pygame.time.Clock()
         self.running = True
+        print(self.board.squares)
 
     def run(self):
         while self.running:
@@ -17,6 +18,9 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    print(self.board.get_square_clicked(event.pos))
+                    print()
             
             self.board.display_board(self.screen)
 
@@ -40,6 +44,7 @@ class Board:
         self.square_width = self.board_width // self.board_collums
         self.square_height = self.board_height // self.board_rows
         self.squares = {} # (x, y) : {color, piece[None]}
+        self.selected = None
         
         self.initialize_board()
         self.initalize_pieces(classic_piece_map)
@@ -93,7 +98,12 @@ class Board:
             
             piece = value["piece"]
             if piece:
-                screen.blit(piece.image, (x,y))
+                screen.blit(piece.image, (x+self.board_x,y+self.board_y))
+
+    def get_square_clicked(self, pos):
+        x, y = pos
+        # Remove right side of number
+        return ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
 
 
 
