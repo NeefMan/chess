@@ -9,7 +9,6 @@ class Game:
         self.board = Board(self.settings.colors["wheat"], self.settings.colors["brown"])
         self.clock = pygame.time.Clock()
         self.running = True
-        print(self.board.squares)
 
     def run(self):
         while self.running:
@@ -20,8 +19,11 @@ class Game:
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clicked_square = self.board.get_square_clicked(event.pos)
+                    if self.board.selected:
+                        move = self.board.move(clicked_square)
+                        print(move)
+                        break
                     self.board.set_selected_square(clicked_square)
-                    print(self.board.selected)
 
             
             self.board.display_board(self.screen)
@@ -86,6 +88,8 @@ class Board:
             
             piece_class, file_name = piece_name_abbreviation_map[value]
             self.squares[(x,y)]["piece"] = piece_class(value, f"images/pieces/{file_name}", self.square_width, self.square_height)
+            self.squares[(x,y)]["piece"].x = x
+            self.squares[(x,y)]["piece"].y = y
             
 
     def display_board(self, screen):
@@ -116,12 +120,26 @@ class Board:
             return
         self.selected = None
 
+    def move(self, to_square):
+        if to_square == (self.selected.x, self.selected.y):
+            self.selected = None
+            return False
+        x, y = to_square
+        self.squares[(self.selected.x, self.selected.y)]["piece"] = None
+        self.selected.x = x
+        self.selected.y = y
+        self.squares[to_square]["piece"] = self.selected
+        self.selected = None
+        return True
+
 
 
 class Piece:
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (desired_image_width, desired_image_height))
         self.color = piece
+        self.x = None
+        self.y = None
 
 class Pawn(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):

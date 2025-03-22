@@ -35,3 +35,9 @@ What can a queen do?
 
 What can a king do?
 -Move + capture 1 space in all adjacent tiles, unless that same move would put the king in check
+
+
+
+Move the piece:
+-Get clicked square
+-If there is a self.selected, then set the clicked square to self.selected and then set the self.selected original location in self.squares["piece"] to None
