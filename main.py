@@ -17,13 +17,16 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clicked_square = self.board.get_square_clicked(event.pos)
-                    if self.board.selected:
-                        move = self.board.move(clicked_square)
-                        print(move)
+                    if self.board.selected and clicked_square:
+                        self.board.move(clicked_square)
                         break
-                    self.board.set_selected_square(clicked_square)
+                    else:
+                        self.board.set_selected_square(clicked_square)
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_f:
+                        self.board.flipped = False if self.board.flipped else True
 
             
             self.board.display_board(self.screen)
@@ -49,6 +52,7 @@ class Board:
         self.square_height = self.board_height // self.board_rows
         self.squares = {} # (x, y) : {color, piece[None]}
         self.selected = None
+        self.flipped = False # Whether board is displayed from black or whites pov
         
         self.initialize_board()
         self.initalize_pieces(classic_piece_map)
@@ -95,6 +99,10 @@ class Board:
     def display_board(self, screen):
         for key, value in self.squares.items():
             x, y = key
+            if self.flipped:
+                x, y = self.flip_cords(x, y)
+                x -= self.square_width
+                y -= self.square_height
             color = value["color"]
             pygame.draw.rect(
                 screen, 
@@ -108,11 +116,16 @@ class Board:
 
     def get_square_clicked(self, pos):
         x, y = pos
+        if self.flipped:
+            x, y = self.flip_cords(x, y)
         # Remove right side of number
         x, y = ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
         if x < 0 or x > self.board_width-self.square_width or y < 0 or y > self.board_height-self.square_height:
             return None
         return (x,y)
+    
+    def flip_cords(self, x, y):
+        return (self.board_width-x, self.board_height-y)
     
     def set_selected_square(self, square):
         if square:
