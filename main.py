@@ -6,9 +6,10 @@ class Game:
     def __init__(self):
         self.settings = Settings()
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
-        self.board = Board(self.settings.colors["wheat"], self.settings.colors["brown"])
+        self.board = self.create_board_instance()
         self.clock = pygame.time.Clock()
         self.running = True
+        print(self.board.squares)
 
     def run(self):
         while self.running:
@@ -27,19 +28,28 @@ class Game:
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_f:
                         self.board.flipped = False if self.board.flipped else True
+                    elif event.key == pygame.K_r:
+                        self.board = self.create_board_instance()
+                    elif event.key == pygame.K_q:
+                        sys.exit()
 
             
             self.board.display_board(self.screen)
 
             pygame.display.flip()
             self.clock.tick(self.settings.fps)
+
+    def create_board_instance(self):
+        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"])
   
 
 class Board:
-    def __init__(self, light, dark):
+    def __init__(self, main, light, dark):
+        self.main = main
+
         # Board
-        self.board_x = 0
-        self.board_y = 0
+        self.board_x = 500
+        self.board_y = 300
         self.board_width = 800
         self.board_height = 800
         self.board_rows = 8
@@ -118,6 +128,8 @@ class Board:
         x, y = pos
         if self.flipped:
             x, y = self.flip_cords(x, y)
+            x += 2 * self.board_x
+            y += 2 * self.board_y
         # Remove right side of number
         x, y = ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
         if x < 0 or x > self.board_width-self.square_width or y < 0 or y > self.board_height-self.square_height:
@@ -181,8 +193,8 @@ class King(Piece):
 
 class Settings:
     def __init__(self):
-        self.screen_width = 800
-        self.screen_height = 800
+        self.screen_width = 1920
+        self.screen_height = 1080
         self.colors = {
             "brown": (184,139,74),
             "wheat": (227,193,111),
