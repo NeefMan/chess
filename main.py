@@ -47,10 +47,10 @@ class Board:
         self.main = main
 
         # Board
-        self.board_x = 237
-        self.board_y = 348
-        self.board_width = 362
-        self.board_height = 362
+        self.board_x = 0
+        self.board_y = 0
+        self.board_width = 800
+        self.board_height = 800
         self.board_rows = 8
         self.board_collums = 8
         self.board_color_light = light
@@ -166,30 +166,83 @@ class Piece:
         self.color = piece
         self.x = None
         self.y = None
+        self.recursive_move = False
 
 class Pawn(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.move_set = [ # non_capture, capture (only)
+            (0,2,True),
+            (0,1,True),
+            (-1,1,False,True),
+            (1,1,False,True)
+        ]
 
 class Bishop(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.recursive_move = True
+        self.move_set = [
+            (-1,-1),
+            (-1,1),
+            (1,1),
+            (1,-1)
+        ]
 
 class Knight(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.move_set = [
+            (-1,2),
+            (-1,-2),
+            (-2,1),
+            (-2,-1),
+            (1,2),
+            (1,-2),
+            (2,1),
+            (2,-1)
+        ]
 
 class Rook(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.recursive_move = True
+        self.move_set = [
+            (-1,0),
+            (1,0),
+            (0,1),
+            (0,-1)
+        ]
 
 class Queen(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.recursive_move = True
+        self.move_set = [
+            (-1,0),
+            (1,0),
+            (0,1),
+            (0,-1),
+            (-1,-1),
+            (-1,1),
+            (1,1),
+            (1,-1)
+
+        ]
 
 class King(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height):
         super().__init__(piece, image, desired_image_width, desired_image_height)
+        self.move_set = [
+            (-1,0),
+            (1,0),
+            (0,1),
+            (0,-1),
+            (-1,-1),
+            (-1,1),
+            (1,1),
+            (1,-1)
+        ]
 
 
 import socket
@@ -198,8 +251,8 @@ import json
 
 class Settings:
     def __init__(self):
-        self.screen_width = 900
-        self.screen_height = 900
+        self.screen_width = 800
+        self.screen_height = 800
         self.colors = {
             "brown": (184,139,74),
             "wheat": (227,193,111),
