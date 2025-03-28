@@ -9,7 +9,6 @@ class Game:
         self.board = self.create_board_instance()
         self.clock = pygame.time.Clock()
         self.running = True
-        print(self.board.squares)
 
     def run(self):
         while self.running:
@@ -48,10 +47,10 @@ class Board:
         self.main = main
 
         # Board
-        self.board_x = 500
-        self.board_y = 300
-        self.board_width = 800
-        self.board_height = 800
+        self.board_x = 100
+        self.board_y = 0
+        self.board_width = 300
+        self.board_height = 300
         self.board_rows = 8
         self.board_collums = 8
         self.board_color_light = light
@@ -70,12 +69,13 @@ class Board:
     def initialize_board(self):
         color1 = self.board_color_light
         color2 = self.board_color_dark
-        for y in range(0, self.board_height, self.square_height):
-            for x in range(0, self.board_width, self.square_width):
+        for y in range(0, self.square_height*self.board_rows, self.square_height):
+            for x in range(0, self.square_width*self.board_collums, self.square_width):
                 self.squares[(x,y)] = {}
                 self.squares[(x,y)]["color"] = color1
                 self.squares[(x,y)]["piece"] = None
-                if x < self.board_width - self.square_width:
+                print(x, y, color1, self.square_width * self.board_collums)
+                if x < (self.square_width * self.board_collums) - self.square_width:
                     color1, color2 = color2, color1
     
     def initalize_pieces(self, imported_piece_map):
@@ -191,10 +191,14 @@ class King(Piece):
         super().__init__(piece, image, desired_image_width, desired_image_height)
 
 
+import socket
+import json
+
+
 class Settings:
     def __init__(self):
-        self.screen_width = 1920
-        self.screen_height = 1080
+        self.screen_width = 900
+        self.screen_height = 900
         self.colors = {
             "brown": (184,139,74),
             "wheat": (227,193,111),
