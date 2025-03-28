@@ -47,10 +47,10 @@ class Board:
         self.main = main
 
         # Board
-        self.board_x = 100
-        self.board_y = 0
-        self.board_width = 300
-        self.board_height = 300
+        self.board_x = 237
+        self.board_y = 348
+        self.board_width = 362
+        self.board_height = 362
         self.board_rows = 8
         self.board_collums = 8
         self.board_color_light = light
@@ -74,7 +74,6 @@ class Board:
                 self.squares[(x,y)] = {}
                 self.squares[(x,y)]["color"] = color1
                 self.squares[(x,y)]["piece"] = None
-                print(x, y, color1, self.square_width * self.board_collums)
                 if x < (self.square_width * self.board_collums) - self.square_width:
                     color1, color2 = color2, color1
     
@@ -126,12 +125,14 @@ class Board:
 
     def get_square_clicked(self, pos):
         x, y = pos
+        square_size = self.board_width / self.board_collums
+        x -= self.board_x
+        y -= self.board_y
         if self.flipped:
             x, y = self.flip_cords(x, y)
-            x += 2 * self.board_x
-            y += 2 * self.board_y
-        # Remove right side of number
-        x, y = ((((x)//self.square_width)*self.square_width)-self.board_x, (((y)//self.square_height)*self.square_height)-self.board_y)
+        
+        x = int(x / square_size) * self.square_width
+        y = int(y / square_size) * self.square_height
         if x < 0 or x > self.board_width-self.square_width or y < 0 or y > self.board_height-self.square_height:
             return None
         return (x,y)
