@@ -41,3 +41,11 @@ What can a king do?
 Move the piece:
 -Get clicked square
 -If there is a self.selected, then set the clicked square to self.selected and then set the self.selected original location in self.squares["piece"] to None
+
+
+Create server for connection of 2 devices to 1 game:
+In the server, data on the current match will only be stored temporarily - the server will simply mediate the changes in board state between both devices.
+When one device makes a move, it will send that data to the server. Once the server gets the move from that user, it will send that move to the other user.
+The devices will communicate to the server with json data.
+When initially connecting to the server, the player can choose an opponent by username, the server will then wait for that opponent to choose the challenger as their opponent. Once they have both challenged each other, they will be connected and in the same match.
+
