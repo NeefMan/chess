@@ -49,3 +49,9 @@ When one device makes a move, it will send that data to the server. Once the ser
 The devices will communicate to the server with json data.
 When initially connecting to the server, the player can choose an opponent by username, the server will then wait for that opponent to choose the challenger as their opponent. Once they have both challenged each other, they will be connected and in the same match.
 
+spawn a thread from main which will communicate with the server periodically, checking for a new move.
+each move stored in the server will be given a number. This number will start at 1 signalling the first move and increment by 1 for each new move that is added to the server. this way, client can know whether or not that is a new move. 
+
+write the class for the client so that the connection can be accessed as a class variable. 
+then spawn the thread which will periodically check with the server if there is a new move. 
+Whenever the user tries to move you can also send relevent move data through the server by calling a client class function

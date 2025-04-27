@@ -1,9 +1,15 @@
 import pygame
 import sys
 import classic_piece_map
+from client import Client
+import threading
+import time
 
 class Game:
     def __init__(self):
+        self.client = Client()
+        thread = threading.Thread(target=self.client.create_connection)
+        thread.start()
         self.settings = Settings()
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.board = self.create_board_instance()
@@ -16,6 +22,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.client.running = False
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clicked_square = self.board.get_square_clicked(event.pos)
