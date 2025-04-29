@@ -7,7 +7,7 @@ HOST = "18.218.245.80"
 PORT = 5000
 END_DELIMETER = "*&^%"
 
-inbox = defaultdict(list)  # {"username": [(message, from_user)]}
+inbox = defaultdict(list)  # {"username": [(message, from_user, time_stamp)]}
 shutdown_event = threading.Event()  # Thread-safe shutdown flag
 
 def handle_data(data, conn):

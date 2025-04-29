@@ -55,3 +55,8 @@ each move stored in the server will be given a number. This number will start at
 write the class for the client so that the connection can be accessed as a class variable. 
 then spawn the thread which will periodically check with the server if there is a new move. 
 Whenever the user tries to move you can also send relevent move data through the server by calling a client class function
+
+Establish a connection between both users and handshake.
+
+server recieve connection cant differentiate between multiple json requests sent at the same time. need a way to split the packet by delimeter and then cache away
+the rest to be able to use on the next request. I dont even fucking know that might not even be the problem

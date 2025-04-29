@@ -1,6 +1,7 @@
 import socket
 import json
 import time
+import sys
 
 class Client:
     def __init__(self):
@@ -8,6 +9,7 @@ class Client:
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
         self.running = True
+        self.timeout_dur = 15
 
 
     def recieve_data(self, conn):
@@ -23,35 +25,57 @@ class Client:
         json_data = json.dumps(data)
         json_data += self.END_DELIMETER
         conn.sendall(json_data.encode())
-    
-    def create_connection(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            self.conn = s
-            s.connect((self.HOST, self.PORT))
-            print("Connected")
-            #username = input("What is your username? ")
-            while self.running:
-                time.sleep(1)
-                """data = {}
-                task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
-                data["task"] = task
-                data["username"] = username
-                if task == "vi":
-                    self.send_data_to_host(s, data)
-                    inbox = json.loads(self.recieve_data(s))
-                    print(inbox)
-                    continue
-                elif task == "sm":
-                    to_user = input("Who do you want to send a message to? ")
-                    message = input("What is the message? ")
-                    data["to_user"] = to_user
-                    data["message"] = message
-                elif task == "dc":
-                    running = False
-                else:
-                    print("task invalid")
-                    continue
 
-                self.send_data_to_host(s, data)"""
-            self.send_data_to_host(self.conn, {"task": "dc"})
+    def initialize_client(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(self.timeout_dur)
+            try:
+                self.conn = s
+                print("Connected")
+                self.username = input("What is your username? ")
+                self.connect_to_user = input("Who would you like to connect to? ")
+                s.connect((self.HOST, self.PORT))
+                self.send_data_to_host(self.conn, {"username": self.username, "task": "sm", "to_user": self.connect_to_user, "message": "handshake"})
+                self.send_data_to_host(self.conn, {"username": self.username, "task": "vi"})
+                start_time = time.time()
+                handshake = json.loads(self.recieve_data(self.conn))
+                while handshake == None and time.time() - start_time < self.timeout_dur: 
+                    print("h")
+                    time.sleep(0.5)
+                    handshake = json.loads(self.recieve_data(self.conn))
+                if not handshake:
+                    raise Exception
+                message, from_user = handshake[-1]
+                if not message == "handshake" or not from_user == self.connect_to_user:
+                    raise Exception
+                print(f"Successfully connected to user: {from_user}")
+            except Exception as e:
+                print(e)
+                print("There was an error in connecting to the user")
+                sys.exit(1)
+    
+    def run_client(self):
+        while self.running:
+            """data = {}
+            task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
+            data["task"] = task
+            data["username"] = username
+            if task == "vi":
+                self.send_data_to_host(s, data)
+                inbox = json.loads(self.recieve_data(s))
+                print(inbox)
+                continue
+            elif task == "sm":
+                to_user = input("Who do you want to send a message to? ")
+                message = input("What is the message? ")
+                data["to_user"] = to_user
+                data["message"] = message
+            elif task == "dc":
+                running = False
+            else:
+                print("task invalid")
+                continue
+
+            self.send_data_to_host(s, data)"""
+        self.send_data_to_host(self.conn, {"task": "dc"})
         print("Connection closed")

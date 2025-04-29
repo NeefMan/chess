@@ -8,7 +8,8 @@ import time
 class Game:
     def __init__(self):
         self.client = Client()
-        thread = threading.Thread(target=self.client.create_connection)
+        self.client.initialize_client()
+        thread = threading.Thread(target=self.client.run_client)
         thread.start()
         self.settings = Settings()
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
