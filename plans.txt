@@ -60,3 +60,9 @@ Establish a connection between both users and handshake.
 
 server recieve connection cant differentiate between multiple json requests sent at the same time. need a way to split the packet by delimeter and then cache away
 the rest to be able to use on the next request. I dont even fucking know that might not even be the problem
+
+No it was not the problem. The real problem was that I am sending 2 back to back sendall calls to my server without waiting for a reply.
+My next step is to fix my send calls client side to wait for a response back from my server, maybe with use of status codes since then
+I can use 100 for error and 200 for successfull call. Also I need a lsit to keep track of client connections server side so that when
+I hit the kill switch, my server will automatically close both the listening socket and all subsequent connections. This might fix the
+problem where the server must be fully restarted before running again, after killing it. 
