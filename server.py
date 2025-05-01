@@ -3,11 +3,12 @@ import threading
 from collections import defaultdict
 import json
 
-HOST = "18.218.245.80"
+HOST = "127.0.0.1"
 PORT = 5000
 END_DELIMETER = "*&^%"
 
 inbox = defaultdict(list)  # {"username": [(message, from_user, time_stamp)]}
+connections = set()
 shutdown_event = threading.Event()  # Thread-safe shutdown flag
 
 def handle_data(data, conn):
@@ -20,6 +21,7 @@ def handle_data(data, conn):
         print(f"(Message Request) From: {username} - To: {to_user} - Message: {message}")
     elif task == "vi":
         user_inbox = inbox.get(username)
+        print(data)
         conn.sendall((json.dumps(user_inbox) + END_DELIMETER).encode())
         print(f"(View inbox request) For user: {username} - Inbox: {user_inbox}")
     elif task == "kill":
@@ -32,14 +34,19 @@ def recieve_data(conn):
     while True:
         try:
             packet = conn.recv(1024).decode()
+            # <-- NEW: if peer closed, treat it like a "disconnect" task
+            if packet == "":
+                print("packet blank bcuz user dc'd")
+                return json.dumps({"task": "dc"})
             full_packet += packet
             if full_packet.endswith(END_DELIMETER):
                 break
         except socket.timeout:
             if shutdown_event.is_set():
-                print("shutdown event is set")
                 return json.dumps({"task": "dc"})
+            # else keep looping
     return full_packet[:-len(END_DELIMETER)]
+
 
 
 def handle_connection(conn, addr):
@@ -51,6 +58,7 @@ def handle_connection(conn, addr):
             if shutdown_event.is_set():
                 break
             data = json.loads(recieve_data(conn))
+    connections.remove(conn)
     print(f"Disconnected from {addr}\n\n")
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -61,7 +69,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.settimeout(1.0)  # Avoid blocking indefinitely on accept()
             conn, addr = s.accept()
-            thread = threading.Thread(target=handle_connection, args=(conn, addr))
+            connections.add(conn)
+            thread = threading.Thread(target=handle_connection, args=(conn, addr), daemon=True)
             thread.start()
         except socket.timeout:
             continue

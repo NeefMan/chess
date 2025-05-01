@@ -9,7 +9,7 @@ class Game:
     def __init__(self):
         self.client = Client()
         self.client.initialize_client()
-        thread = threading.Thread(target=self.client.run_client)
+        thread = threading.Thread(target=self.client.run_client, daemon=True)
         thread.start()
         self.settings = Settings()
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
@@ -23,7 +23,7 @@ class Game:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.client.running = False
+                    self.client.disconnect()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clicked_square = self.board.get_square_clicked(event.pos)
@@ -38,6 +38,7 @@ class Game:
                     elif event.key == pygame.K_r:
                         self.board = self.create_board_instance()
                     elif event.key == pygame.K_q:
+                        self.client.disconnect()
                         sys.exit()
 
             

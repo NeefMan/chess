@@ -2,10 +2,10 @@ import socket
 import json
 import time
 import sys
-
+# "18.218.245.80"
 class Client:
     def __init__(self):
-        self.HOST = "18.218.245.80"
+        self.HOST = "127.0.0.1"
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
         self.running = True
@@ -27,35 +27,28 @@ class Client:
         conn.sendall(json_data.encode())
 
     def initialize_client(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(self.timeout_dur)
-            try:
-                self.conn = s
-                print("Connected")
-                self.username = input("What is your username? ")
-                self.connect_to_user = input("Who would you like to connect to? ")
-                s.connect((self.HOST, self.PORT))
-                self.send_data_to_host(self.conn, {"username": self.username, "task": "sm", "to_user": self.connect_to_user, "message": "handshake"})
-                self.send_data_to_host(self.conn, {"username": self.username, "task": "vi"})
-                start_time = time.time()
-                handshake = json.loads(self.recieve_data(self.conn))
-                while handshake == None and time.time() - start_time < self.timeout_dur: 
-                    print("h")
-                    time.sleep(0.5)
-                    handshake = json.loads(self.recieve_data(self.conn))
-                if not handshake:
-                    raise Exception
-                message, from_user = handshake[-1]
-                if not message == "handshake" or not from_user == self.connect_to_user:
-                    raise Exception
-                print(f"Successfully connected to user: {from_user}")
-            except Exception as e:
-                print(e)
-                print("There was an error in connecting to the user")
-                sys.exit(1)
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.conn.settimeout(self.timeout_dur)
+        try:
+            self.username = input("What is your username? ")
+            self.connect_to_user = input("Who would you like to connect to? ")
+            self.conn.connect((self.HOST, self.PORT))
+            print("Connected")
+            self.send_data_to_host(self.conn, {"username": self.username, "task": "sm", "to_user": self.connect_to_user, "message": "handshake"})
+        except Exception as e:
+            print(e)
+            print("There was an error in connecting to the user")
+            sys.exit(1)
+
+    def disconnect(self):
+        self.send_data_to_host(self.conn, {"task": "dc"})
+        self.conn.close()
+        print("Connection closed")
     
     def run_client(self):
         while self.running:
+            time.sleep(1)  
+            print("running")
             """data = {}
             task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
             data["task"] = task
@@ -77,5 +70,3 @@ class Client:
                 continue
 
             self.send_data_to_host(s, data)"""
-        self.send_data_to_host(self.conn, {"task": "dc"})
-        print("Connection closed")
