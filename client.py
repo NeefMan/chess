@@ -9,7 +9,7 @@ class Client:
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
         self.running = True
-        self.timeout_dur = 15
+        self.timeout_dur = 20
 
 
     def recieve_data(self, conn):
@@ -19,7 +19,7 @@ class Client:
             full_packet += packet
             if full_packet[len(full_packet)-len(self.END_DELIMETER):] == self.END_DELIMETER:
                 break
-        return full_packet[:len(full_packet)-len(self.END_DELIMETER)]
+        return json.loads(full_packet[:len(full_packet)-len(self.END_DELIMETER)])
 
     def send_data_to_host(self, conn, data):
         json_data = json.dumps(data)
@@ -33,8 +33,15 @@ class Client:
             self.username = input("What is your username? ")
             self.connect_to_user = input("Who would you like to connect to? ")
             self.conn.connect((self.HOST, self.PORT))
-            print("Connected")
-            self.send_data_to_host(self.conn, {"username": self.username, "task": "sm", "to_user": self.connect_to_user, "message": "handshake"})
+            print("Connected to server")
+            self.send_data_to_host(self.conn, {"username": self.username, "task": "connect", "to_user": self.connect_to_user})
+            result = self.recieve_data(self.conn)
+            if "error" in result:
+                raise Exception
+            elif "success" in result:
+                print(result["success"])
+            else:
+                raise Exception
         except Exception as e:
             print(e)
             print("There was an error in connecting to the user")
@@ -48,7 +55,6 @@ class Client:
     def run_client(self):
         while self.running:
             time.sleep(1)  
-            print("running")
             """data = {}
             task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
             data["task"] = task
