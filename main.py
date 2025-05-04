@@ -31,7 +31,7 @@ class Game:
                         self.board.move(clicked_square)
                         break
                     else:
-                        self.board.set_selected_square(clicked_square)
+                        self.board.selected = clicked_square
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_f:
                         self.board.flipped = False if self.board.flipped else True
@@ -149,24 +149,26 @@ class Board:
     def flip_cords(self, x, y):
         return (self.board_width-x, self.board_height-y)
     
-    def set_selected_square(self, square):
+    """def set_selected_square(self, square):
         if square:
             self.selected = self.squares[square]["piece"]
             return
-        self.selected = None
+        self.selected = None"""
 
     def move(self, to_square):
-        if to_square == (self.selected.x, self.selected.y):
+        if to_square == self.selected:
             self.selected = None
             return False
         x, y = to_square
-        self.squares[(self.selected.x, self.selected.y)]["piece"] = None
-        self.selected.x = x
-        self.selected.y = y
-        self.squares[to_square]["piece"] = self.selected
+        selected_piece = self.squares[self.selected]["piece"] # temp store the selected piece
+        self.squares[self.selected]["piece"] = None # remove the selected piece from the squares map
+
+        # set the pieces new cords to the to_square cords
+        selected_piece.x, selected_piece.y = x, y
+        # add the piece to the square map at the to_square cords
+        self.squares[to_square]["piece"] = selected_piece
         self.selected = None
         return True
-
 
 
 class Piece:
