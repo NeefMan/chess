@@ -9,7 +9,7 @@ PORT = 5000
 END_DELIMETER = "*&^%"
 TIMEOUT_DUR = 15
 
-inbox = defaultdict(list)  # {"username": [(message, from_user, time_stamp)]}
+moves = defaultdict(list)  # {"username": [(move, from_user, time_stamp)]}
 users = {} # {"username": connection}
 shutdown_event = threading.Event()  # Thread-safe shutdown flag
 
@@ -21,19 +21,28 @@ def send_data_to_host(conn, data):
 def handle_task(data, conn):
     task = data["task"]
     username = data["username"]
-    if task == "kill":
-        shutdown_event.set()
-        print(f"(Kill Request) Server shutting down...")
+    if task == "checkmove":
+        move = moves.get(username)
+        if move:
+            moves[username] = None
+        send_data_to_host(conn, {"move": move})
+    elif task == "move":
+        move = data["move"]
+        to_user = data["to_user"]
+        moves[to_user] = move
     elif task == "connect":
         to_user = data["to_user"]
         print(f"(Connect request) from user: {username} - to user: {to_user}")
         start_time = time.time()
         while to_user not in users:
             if time.time() - start_time > TIMEOUT_DUR:
-                send_data_to_host(conn, {"error": "error connecting to user, timeout"})
+                send_data_to_host(conn, {"error": f"Timeout error connecting to user: {to_user}"})
                 return
             time.sleep(0.1)
         send_data_to_host(conn, {"success": f"Successfully connected to user: {to_user}"})
+    elif task == "kill":
+        shutdown_event.set()
+        print(f"(Kill Request) Server shutting down...")
 
 def recieve_data(conn):
     full_packet = ""
@@ -58,8 +67,10 @@ def handle_connection(conn, addr):
     with conn:
         print(f"Connected with {addr}")
         data = json.loads(recieve_data(conn))
+        # register the user and move inbox
         username = data["username"]
         users[username] = conn
+        moves["username"] = None
         while data["task"] != "dc":
             handle_task(data, conn)
             if shutdown_event.is_set():

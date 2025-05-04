@@ -54,7 +54,8 @@ class Client:
     
     def run_client(self):
         while self.running:
-            time.sleep(1)  
+            time.sleep(1)
+              
             """data = {}
             task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
             data["task"] = task
