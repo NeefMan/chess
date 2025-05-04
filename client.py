@@ -31,10 +31,10 @@ class Client:
         self.conn.settimeout(self.timeout_dur)
         try:
             self.username = input("What is your username? ")
-            self.connect_to_user = input("Who would you like to connect to? ")
+            self.to_user = input("Who would you like to connect to? ")
             self.conn.connect((self.HOST, self.PORT))
             print("Connected to server")
-            self.send_data_to_host(self.conn, {"username": self.username, "task": "connect", "to_user": self.connect_to_user})
+            self.send_data_to_host(self.conn, {"username": self.username, "task": "connect", "to_user": self.to_user})
             result = self.recieve_data(self.conn)
             if "error" in result:
                 raise Exception

@@ -27,6 +27,7 @@ def handle_task(data, conn):
             moves[username] = None
         send_data_to_host(conn, {"move": move})
     elif task == "move":
+        print(f"(Move request) {data}")
         move = data["move"]
         to_user = data["to_user"]
         moves[to_user] = move
@@ -77,6 +78,7 @@ def handle_connection(conn, addr):
                 break
             data = json.loads(recieve_data(conn))
     users.pop(username, None)
+    moves.pop(username, None)
     print(f"Disconnected from {addr}\n\n")
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

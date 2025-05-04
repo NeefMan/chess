@@ -31,7 +31,7 @@ class Game:
                         self.board.move(clicked_square)
                         break
                     else:
-                        self.board.selected = clicked_square
+                        self.board.selected = clicked_square if clicked_square and self.board.squares[clicked_square]["piece"] else None
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_f:
                         self.board.flipped = False if self.board.flipped else True
@@ -48,12 +48,13 @@ class Game:
             self.clock.tick(self.settings.fps)
 
     def create_board_instance(self):
-        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"])
+        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client)
   
 
 class Board:
-    def __init__(self, main, light, dark):
+    def __init__(self, main, light, dark, client):
         self.main = main
+        self.client = client
 
         # Board
         self.board_x = 0
@@ -148,19 +149,24 @@ class Board:
     
     def flip_cords(self, x, y):
         return (self.board_width-x, self.board_height-y)
-    
-    """def set_selected_square(self, square):
-        if square:
-            self.selected = self.squares[square]["piece"]
-            return
-        self.selected = None"""
 
     def move(self, to_square):
         if to_square == self.selected:
             self.selected = None
             return False
         x, y = to_square
+
         selected_piece = self.squares[self.selected]["piece"] # temp store the selected piece
+        if not selected_piece:
+            print(self.selected, to_square)
+            self.selected = None
+            return False
+
+        # send a move request to the server
+        data = {"username": self.client.username, "task": "move", "to_user": self.client.to_user, "move": (self.selected, to_square)}
+        thread = threading.Thread(target=self.client.send_data_to_host, args=(self.client.conn, data), daemon=True)
+        thread.start()
+
         self.squares[self.selected]["piece"] = None # remove the selected piece from the squares map
 
         # set the pieces new cords to the to_square cords
