@@ -7,7 +7,7 @@ import time
 
 class Game:
     def __init__(self):
-        self.client = Client()
+        self.client = Client(self)
         self.client.initialize_client()
         thread = threading.Thread(target=self.client.run_client, daemon=True)
         thread.start()
@@ -28,7 +28,7 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clicked_square = self.board.get_square_clicked(event.pos)
                     if self.board.selected and clicked_square:
-                        self.board.move(clicked_square)
+                        self.board.move(clicked_square, user_move=True)
                         break
                     else:
                         self.board.selected = clicked_square if clicked_square and self.board.squares[clicked_square]["piece"] else None
@@ -150,22 +150,19 @@ class Board:
     def flip_cords(self, x, y):
         return (self.board_width-x, self.board_height-y)
 
-    def move(self, to_square):
+    def move(self, to_square, user_move=False):
         if to_square == self.selected:
             self.selected = None
             return False
         x, y = to_square
 
         selected_piece = self.squares[self.selected]["piece"] # temp store the selected piece
-        if not selected_piece:
-            print(self.selected, to_square)
-            self.selected = None
-            return False
-
-        # send a move request to the server
-        data = {"username": self.client.username, "task": "move", "to_user": self.client.to_user, "move": (self.selected, to_square)}
-        thread = threading.Thread(target=self.client.send_data_to_host, args=(self.client.conn, data), daemon=True)
-        thread.start()
+        
+        if user_move:
+            # send a move request to the server
+            data = {"username": self.client.username, "task": "move", "to_user": self.client.to_user, "move": (self.selected, to_square)}
+            thread = threading.Thread(target=self.client.send_data_to_host, args=(self.client.conn, data), daemon=True)
+            thread.start()
 
         self.squares[self.selected]["piece"] = None # remove the selected piece from the squares map
 

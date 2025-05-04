@@ -21,11 +21,11 @@ def send_data_to_host(conn, data):
 def handle_task(data, conn):
     task = data["task"]
     username = data["username"]
-    if task == "checkmove":
+    if task == "check_move":
         move = moves.get(username)
+        send_data_to_host(conn, {"move": move})
         if move:
             moves[username] = None
-        send_data_to_host(conn, {"move": move})
     elif task == "move":
         print(f"(Move request) {data}")
         move = data["move"]

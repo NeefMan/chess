@@ -4,7 +4,8 @@ import time
 import sys
 # "18.218.245.80"
 class Client:
-    def __init__(self):
+    def __init__(self, main):
+        self.main = main
         self.HOST = "127.0.0.1"
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
@@ -53,7 +54,19 @@ class Client:
         print("Connection closed")
     
     def run_client(self):
+
         while self.running:
+            self.conn.settimeout(None)
+            data = {"username": self.username, "task": "check_move"}
+            self.send_data_to_host(self.conn, data)
+            data = self.recieve_data(self.conn)
+            move = data.get("move")
+            if move:
+                selected_square, to_square = move
+                selected_square = tuple(selected_square)
+                to_square = tuple(to_square)
+                self.main.board.selected = selected_square
+                self.main.board.move(to_square)
             time.sleep(1)
               
             """data = {}
