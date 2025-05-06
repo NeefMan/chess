@@ -11,11 +11,17 @@ class Game:
         client_result = self.client.initialize_client()
         thread = threading.Thread(target=self.client.run_client, daemon=True)
         thread.start()
+
         self.settings = Settings()
+
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
+
         self.board = self.create_board_instance()
         self.board.turn = client_result["turn"]
+        self.board.flipped = not client_result["turn"]
+
         self.clock = pygame.time.Clock()
+
         self.running = True
 
     def run(self):
@@ -35,7 +41,7 @@ class Game:
                         self.board.selected = clicked_square if clicked_square and self.board.squares[clicked_square]["piece"] else None
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_f:
-                        self.board.flipped = False if self.board.flipped else True
+                        self.board.flipped = not self.board.flipped
                     elif event.key == pygame.K_r:
                         self.board = self.create_board_instance()
                     elif event.key == pygame.K_q:
