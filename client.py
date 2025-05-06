@@ -6,7 +6,7 @@ import sys
 class Client:
     def __init__(self, main):
         self.main = main
-        self.HOST = "18.218.245.80"
+        self.HOST = "127.0.0.1"
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
         self.running = True

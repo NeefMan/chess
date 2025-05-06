@@ -1,7 +1,7 @@
 import socket
 import json
 
-HOST = "18.218.245.80"
+HOST = "127.0.0.1"
 PORT = 5000
 END_DELIMETER = "*&^%"
 
