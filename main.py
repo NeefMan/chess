@@ -8,12 +8,13 @@ import time
 class Game:
     def __init__(self):
         self.client = Client(self)
-        self.client.initialize_client()
+        client_result = self.client.initialize_client()
         thread = threading.Thread(target=self.client.run_client, daemon=True)
         thread.start()
         self.settings = Settings()
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.board = self.create_board_instance()
+        self.board.turn = client_result["turn"]
         self.clock = pygame.time.Clock()
         self.running = True
 
@@ -25,7 +26,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.client.disconnect()
                     sys.exit()
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.board.turn:
                     clicked_square = self.board.get_square_clicked(event.pos)
                     if self.board.selected and clicked_square:
                         self.board.move(clicked_square, user_move=True)
@@ -55,6 +56,7 @@ class Board:
     def __init__(self, main, light, dark, client):
         self.main = main
         self.client = client
+        self.turn = None
 
         # Board
         self.board_x = 0
@@ -171,6 +173,7 @@ class Board:
         # add the piece to the square map at the to_square cords
         self.squares[to_square]["piece"] = selected_piece
         self.selected = None
+        self.turn = not self.turn
         return True
 
 

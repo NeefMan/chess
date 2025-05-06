@@ -43,6 +43,7 @@ class Client:
                 print(result["success"])
             else:
                 raise Exception
+            return result
         except Exception as e:
             print(e)
             print("There was an error in connecting to the user")

@@ -3,13 +3,14 @@ import threading
 from collections import defaultdict
 import json
 import time
+import random
 
 HOST = "0.0.0.0"
 PORT = 5000
 END_DELIMETER = "*&^%"
 TIMEOUT_DUR = 15
 
-user_data = {} # {"username": {"connection": connection, "move": None, "turn": None}}
+user_data = {} # {"username": {"connection": connection, "move": None, "turn": "not_set", "addr": addr, "timestamp": timestamp}}
 shutdown_event = threading.Event()  # Thread-safe shutdown flag
 
 def send_data_to_host(conn, data):
@@ -18,7 +19,13 @@ def send_data_to_host(conn, data):
     conn.sendall(json_data.encode())
 
 def set_turns(user1, user2):
-    print("should set turns here")
+    #randomly pick the first user, then set their turn to True
+    users = [user1, user2]
+    first = random.choice(users)
+    second = user2 if first == user1 else user1
+
+    user_data[first]["turn"] = True
+    user_data[second]["turn"] = False
 
 def handle_task(data, conn):
     task = data["task"]
@@ -42,9 +49,11 @@ def handle_task(data, conn):
                 send_data_to_host(conn, {"error": f"Timeout error connecting to user: {to_user}"})
                 return
             time.sleep(0.1)
-        if not user_data.get(username).get("turn"):
+        if user_data[username]["timestamp"] < user_data[to_user]["timestamp"]:
             set_turns(username, to_user)
-        send_data_to_host(conn, {"success": f"Successfully connected to user: {to_user}"})
+        while user_data[username]["turn"] == "not_set":
+            time.sleep(1)
+        send_data_to_host(conn, {"success": f"Successfully connected to user: {to_user}", "turn": user_data[username]["turn"]})
     elif task == "kill":
         shutdown_event.set()
         print(f"(Kill Request) Server shutting down...")
@@ -68,18 +77,20 @@ def recieve_data(conn):
             # else keep looping
     return full_packet[:-len(END_DELIMETER)]
 
-def register_user(conn, username):
+def register_user(conn, username, timestamp, addr):
     user_data[username] = {}
     user_data[username]["connection"] = conn
     user_data[username]["move"] = None
-    user_data[username]["turn"] = None
+    user_data[username]["turn"] = "not_set"
+    user_data[username]["timestamp"] = timestamp
+    user_data[username]["addr"] = addr
 
-def handle_connection(conn, addr):
+def handle_connection(conn, addr, timestamp):
     with conn:
         print(f"Connected with {addr}")
         data = json.loads(recieve_data(conn))
         username = data["username"]
-        register_user(conn, username)
+        register_user(conn, username, timestamp, addr)
         while data["task"] != "dc":
             handle_task(data, conn)
             if shutdown_event.is_set():
@@ -96,7 +107,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.settimeout(1.0)  # Avoid blocking indefinitely on accept()
             conn, addr = s.accept()
-            thread = threading.Thread(target=handle_connection, args=(conn, addr), daemon=True)
+            thread = threading.Thread(target=handle_connection, args=(conn, addr, time.time()), daemon=True)
             thread.start()
         except socket.timeout:
             continue
