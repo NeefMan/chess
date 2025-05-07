@@ -96,31 +96,28 @@ class Board:
                     color1, color2 = color2, color1
     
     def initalize_pieces(self, imported_piece_map):
-        image_prefix = "images/test_pieces/"
+        piece_name_abbreviation_map = {
+            "wp": (Pawn, "white_pawn.png"),
+            "bp": (Pawn, "black_pawn.png"),
+            "wb": (Bishop, "white_bishop.png"),
+            "bb": (Bishop, "black_bishop.png"),
+            "wk": (Knight, "white_knight.png"),
+            "bk": (Knight, "black_knight.png"),
+            "wr": (Rook, "white_rook.png"),
+            "br": (Rook, "black_rook.png"),
+            "wq": (Queen, "white_queen.png"),
+            "bq": (Queen, "black_queen.png"),
+            "wki": (King, "white_king.png"),
+            "bki": (King, "black_king.png")
+            }
+        
         for key, value in imported_piece_map.piece_map.items():
             x, y = key
             x *= self.square_width
             y *= self.square_height
-
-            piece_name_abbreviation_map = {
-                "wp": (Pawn, "white_pawn.png"),
-                "bp": (Pawn, "black_pawn.png"),
-                "wb": (Bishop, "white_bishop.png"),
-                "bb": (Bishop, "black_bishop.png"),
-                "wk": (Knight, "white_knight.png"),
-                "bk": (Knight, "black_knight.png"),
-                "wr": (Rook, "white_rook.png"),
-                "br": (Rook, "black_rook.png"),
-                "wq": (Queen, "white_queen.png"),
-                "bq": (Queen, "black_queen.png"),
-                "wki": (King, "white_king.png"),
-                "bki": (King, "black_king.png")
-                }
             
             piece_class, file_name = piece_name_abbreviation_map[value]
-            self.squares[(x,y)]["piece"] = piece_class(value, f"images/pieces/{file_name}", self.square_width, self.square_height)
-            self.squares[(x,y)]["piece"].x = x
-            self.squares[(x,y)]["piece"].y = y
+            self.squares[(x,y)]["piece"] = piece_class(value, f"images/pieces/{file_name}", self.square_width, self.square_height, x, y)
             
 
     def display_board(self, screen):
@@ -184,16 +181,19 @@ class Board:
 
 
 class Piece:
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
         self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (desired_image_width, desired_image_height))
-        self.color = piece
-        self.x = None
-        self.y = None
+        self.piece = piece
+        self.x = x
+        self.y = y
         self.recursive_move = False
 
+    def can_move(self, click_cords):
+        pass
+
 class Pawn(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [ # non_capture, capture (only)
             (0,2,True),
             (0,1,True),
@@ -202,8 +202,8 @@ class Pawn(Piece):
         ]
 
 class Bishop(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,-1),
@@ -213,8 +213,8 @@ class Bishop(Piece):
         ]
 
 class Knight(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [
             (-1,2),
             (-1,-2),
@@ -227,8 +227,8 @@ class Knight(Piece):
         ]
 
 class Rook(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,0),
@@ -238,8 +238,8 @@ class Rook(Piece):
         ]
 
 class Queen(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,0),
@@ -254,8 +254,8 @@ class Queen(Piece):
         ]
 
 class King(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height):
-        super().__init__(piece, image, desired_image_width, desired_image_height)
+    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [
             (-1,0),
             (1,0),
