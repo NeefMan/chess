@@ -55,11 +55,11 @@ class Game:
             self.clock.tick(self.settings.fps)
 
     def create_board_instance(self):
-        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client)
+        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"])
   
 
 class Board:
-    def __init__(self, main, light, dark, client):
+    def __init__(self, main, light, dark, client, highlighted_color):
         self.main = main
         self.client = client
         self.turn = None
@@ -80,6 +80,7 @@ class Board:
         self.squares = {} # (x, y) : {color, piece[None]}
         self.selected = None
         self.flipped = False # Whether board is displayed from black or whites pov
+        self.square_color_highlighted = highlighted_color
         
         self.initialize_board()
         self.initalize_pieces(classic_piece_map)
@@ -123,11 +124,11 @@ class Board:
     def display_board(self, screen):
         for key, value in self.squares.items():
             x, y = key
+            color = self.square_color_highlighted if self.selected == (x,y) else value["color"]
             if self.flipped:
                 x, y = self.flip_cords(x, y)
                 x -= self.square_width
                 y -= self.square_height
-            color = value["color"]
             pygame.draw.rect(
                 screen, 
                 color, 
@@ -280,6 +281,7 @@ class Settings:
             "brown": (184,139,74),
             "wheat": (227,193,111),
             "white": (255,255,255),
+            "selected_yellow": (219,219,83),
         }
         self.fps = 30
 
