@@ -18,7 +18,7 @@ class Client:
         while True:
             packet = conn.recv(1024).decode()
             full_packet += packet
-            if full_packet[len(full_packet)-len(self.END_DELIMETER):] == self.END_DELIMETER:
+            if full_packet.endswith(self.END_DELIMETER):
                 data = full_packet.split(self.END_DELIMETER)
                 data = [json.loads(value) for value in data if value != self.END_DELIMETER and value != '']
                 break
@@ -44,6 +44,7 @@ class Client:
                     raise Exception
                 elif "success" in data:
                     print(data["success"])
+                    print(data)
                 else:
                     raise Exception
                 return data

@@ -31,6 +31,7 @@ def handle_task(data, conn):
     task = data["task"]
     username = data["username"]
     if task == "check_move":
+        print("check move")
         move = user_data.get(username, {}).get("move")
         send_data_to_host(conn, {"move": move})
         if move:
@@ -74,23 +75,14 @@ def recieve_data(conn):
                 return json.dumps({"task": "dc"})
             full_packet += packet
             if full_packet.endswith(END_DELIMETER):
+                data = full_packet.split(END_DELIMETER)
+                data = [json.loads(value) for value in data if value != END_DELIMETER and value != '']
                 break
         except socket.timeout:
             if shutdown_event.is_set():
                 return json.dumps({"task": "dc"})
             # else keep looping
-    return full_packet[:-len(END_DELIMETER)]
-
-"""def recieve_data(self, conn):
-    full_packet = ""
-    while True:
-        packet = conn.recv(1024).decode()
-        full_packet += packet
-        if full_packet[len(full_packet)-len(self.END_DELIMETER):] == self.END_DELIMETER:
-            data = full_packet.split(self.END_DELIMETER)
-            data = [json.loads(value) for value in data if value != self.END_DELIMETER and value != '']
-            break
-    return data"""
+    return data
 
 def register_user(conn, username, timestamp, addr):
     user_data[username] = {}
@@ -101,16 +93,22 @@ def register_user(conn, username, timestamp, addr):
     user_data[username]["addr"] = addr
 
 def handle_connection(conn, addr, timestamp):
+    running = True
     with conn:
         print(f"Connected with {addr}")
-        data = json.loads(recieve_data(conn))
-        username = data["username"]
-        register_user(conn, username, timestamp, addr)
-        while data["task"] != "dc":
-            handle_task(data, conn)
-            if shutdown_event.is_set():
-                break
-            data = json.loads(recieve_data(conn))
+        while running:
+            data = recieve_data(conn)
+            for request in data:
+                if request["task"] == "dc":
+                    running = False
+                    break
+                username = request["username"]
+                if request["task"] == "connect":
+                    register_user(conn, username, timestamp, addr)
+                handle_task(request, conn)
+                if shutdown_event.is_set():
+                    running = False
+                    break
     user_data.pop(username, None)
     print(f"Disconnected from {addr}\n\n")
 
