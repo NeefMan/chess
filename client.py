@@ -19,8 +19,10 @@ class Client:
             packet = conn.recv(1024).decode()
             full_packet += packet
             if full_packet[len(full_packet)-len(self.END_DELIMETER):] == self.END_DELIMETER:
+                data = full_packet.split(self.END_DELIMETER)
+                data = [json.loads(value) for value in data if value != self.END_DELIMETER and value != '']
                 break
-        return json.loads(full_packet[:len(full_packet)-len(self.END_DELIMETER)])
+        return data
 
     def send_data_to_host(self, conn, data):
         json_data = json.dumps(data)
@@ -37,16 +39,18 @@ class Client:
             print("Connected to server")
             self.send_data_to_host(self.conn, {"username": self.username, "task": "connect", "to_user": self.to_user})
             result = self.recieve_data(self.conn)
-            if "error" in result:
-                raise Exception
-            elif "success" in result:
-                print(result["success"])
-            else:
-                raise Exception
-            return result
+            for data in result:
+                if "error" in data:
+                    raise Exception
+                elif "success" in data:
+                    print(data["success"])
+                else:
+                    raise Exception
+                return data
         except Exception as e:
             print(e)
             print("There was an error in connecting to the user")
+            self.send_data_to_host(self.conn, {"task": "dc"})
             sys.exit(1)
 
     def disconnect(self):
@@ -55,39 +59,21 @@ class Client:
         print("Connection closed")
     
     def run_client(self):
-
         while self.running:
             self.conn.settimeout(None)
-            data = {"username": self.username, "task": "check_move"}
-            self.send_data_to_host(self.conn, data)
-            data = self.recieve_data(self.conn)
-            move = data.get("move")
-            if move:
-                selected_square, to_square = move
-                selected_square = tuple(selected_square)
-                to_square = tuple(to_square)
-                self.main.board.selected = selected_square
-                self.main.board.move(to_square)
-            time.sleep(1)
-              
-            """data = {}
-            task = input("Would you like to view your inbox (vi), or send a message (sm), or disconnect (dc): ")
-            data["task"] = task
-            data["username"] = username
-            if task == "vi":
-                self.send_data_to_host(s, data)
-                inbox = json.loads(self.recieve_data(s))
-                print(inbox)
-                continue
-            elif task == "sm":
-                to_user = input("Who do you want to send a message to? ")
-                message = input("What is the message? ")
-                data["to_user"] = to_user
-                data["message"] = message
-            elif task == "dc":
-                running = False
-            else:
-                print("task invalid")
-                continue
-
-            self.send_data_to_host(s, data)"""
+            send_data = {"username": self.username, "task": "check_move"}
+            self.send_data_to_host(self.conn, send_data)
+            recieved_data = self.recieve_data(self.conn)
+            for data in recieved_data:
+                move = data.get("move")
+                if move:
+                    selected_square, to_square = move
+                    selected_square = tuple(selected_square)
+                    to_square = tuple(to_square)
+                    self.main.board.selected = selected_square
+                    self.main.board.move(to_square)
+                reset = data.get("reset")
+                if reset:
+                    print(f"{self.username} reset")
+                    self.main.board = self.main.create_board_instance()
+                time.sleep(1)

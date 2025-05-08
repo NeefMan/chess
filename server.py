@@ -57,6 +57,10 @@ def handle_task(data, conn):
     elif task == "kill":
         shutdown_event.set()
         print(f"(Kill Request) Server shutting down...")
+    elif task == "reset":
+        to_user = data["to_user"]
+        print(f"(Reset Board Request) from: {username} to: {to_user}")
+        send_data_to_host(user_data[to_user]["connection"],  {"reset": True})
 
 def recieve_data(conn):
     full_packet = ""
@@ -76,6 +80,17 @@ def recieve_data(conn):
                 return json.dumps({"task": "dc"})
             # else keep looping
     return full_packet[:-len(END_DELIMETER)]
+
+"""def recieve_data(self, conn):
+    full_packet = ""
+    while True:
+        packet = conn.recv(1024).decode()
+        full_packet += packet
+        if full_packet[len(full_packet)-len(self.END_DELIMETER):] == self.END_DELIMETER:
+            data = full_packet.split(self.END_DELIMETER)
+            data = [json.loads(value) for value in data if value != self.END_DELIMETER and value != '']
+            break
+    return data"""
 
 def register_user(conn, username, timestamp, addr):
     user_data[username] = {}

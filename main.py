@@ -8,7 +8,7 @@ import time
 class Game:
     def __init__(self):
         self.client = Client(self)
-        client_result = self.client.initialize_client()
+        self.client_result = self.client.initialize_client()
         thread = threading.Thread(target=self.client.run_client, daemon=True)
         thread.start()
 
@@ -17,8 +17,6 @@ class Game:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
 
         self.board = self.create_board_instance()
-        self.board.turn = client_result["turn"]
-        self.board.flipped = not client_result["turn"]
 
         self.clock = pygame.time.Clock()
 
@@ -37,12 +35,16 @@ class Game:
                     if self.board.selected and clicked_square:
                         self.board.move(clicked_square, user_move=True)
                         break
+                    elif clicked_square and self.board.squares[clicked_square]["piece"]:
+                        self.board.selected = clicked_square
+                        self.board.squares[clicked_square]["piece"].compute_valid_moves(clicked_square)
                     else:
-                        self.board.selected = clicked_square if clicked_square and self.board.squares[clicked_square]["piece"] else None
+                        self.board.selected = None
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_f:
                         self.board.flipped = not self.board.flipped
                     elif event.key == pygame.K_r:
+                        self.client.send_data_to_host(self.client.conn, {"username": self.client.username, "task": "reset", "to_user": self.client.to_user})
                         self.board = self.create_board_instance()
                     elif event.key == pygame.K_q:
                         self.client.disconnect()
@@ -55,7 +57,11 @@ class Game:
             self.clock.tick(self.settings.fps)
 
     def create_board_instance(self):
-        return Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"])
+        board = Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"])
+        board.turn = self.client_result["turn"]
+        board.flipped = not self.client_result["turn"]
+        return board
+        
   
 
 class Board:
@@ -188,15 +194,18 @@ class Piece:
         self.x = x
         self.y = y
         self.recursive_move = False
+        self.move_set = []
 
-    def can_move(self, click_cords):
-        pass
+    def compute_valid_moves(self, square_cords):
+        valid_moves = {}
+        for move in self.move_set:
+            x_i, y_i, non_capture, capture_only = (*move, False, False, False, False)[:4]
+            
 
 class Pawn(Piece):
     def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
         super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [ # non_capture, capture (only)
-            (0,2,True),
             (0,1,True),
             (-1,1,False,True),
             (1,1,False,True)
