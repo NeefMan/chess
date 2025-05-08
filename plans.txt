@@ -66,3 +66,22 @@ My next step is to fix my send calls client side to wait for a response back fro
 I can use 100 for error and 200 for successfull call. Also I need a lsit to keep track of client connections server side so that when
 I hit the kill switch, my server will automatically close both the listening socket and all subsequent connections. This might fix the
 problem where the server must be fully restarted before running again, after killing it. 
+
+
+-Use hash set to store all valid moves
+-for loop through self.move_set (x, y), also unpack whether or not the move is non capture
+or capture only.
+-If piece has a recursive move set, i.e. Bishop or Rook, then keep incrementing x and y
+until it collides with another piece. Collision with a piece of the same color means the
+move is invalid, whereas collision with a piece of a different color means the move is
+valid. Further down the line it will also have to check if moving a piece means a discovered
+attack on the king, in that case the move would be invalid. 
+-If a move is capture only i.e. pawn diagonal only capture, then check that a piece of a
+different color exists in that coordinate.
+-If a move is non capture only, i.e. pawn forward move, then make sure no piece exists in
+the forward square.
+-Re-add coord (0,2,non_capture=True) to pawn class move set. I forgot that a pawn can move
+forward 2 squares on the first move.
+-Add a variable to pawn: self.moved_yet=False. This way, the func knows whether the pawn
+can move forward 2 squares since it can only move forward 2 squares if it hasn't alreay
+moved. 
