@@ -37,7 +37,7 @@ class Game:
                         break
                     elif clicked_square and self.board.squares[clicked_square]["piece"]:
                         self.board.selected = clicked_square
-                        self.board.squares[clicked_square]["piece"].compute_valid_moves(clicked_square)
+                        self.board.compute_valid_moves(self.board.squares[clicked_square]["piece"])
                     else:
                         self.board.selected = None
                 elif event.type == pygame.KEYUP:
@@ -185,26 +185,48 @@ class Board:
         self.selected = None
         self.turn = not self.turn
         return True
+    
+    def get_piece_at_coord(self, coord):
+        pass
+    
+    def compute_valid_moves(self, piece):
+        valid_moves = {}
+        print(piece.piece_name)
+        for move in piece.move_set:
+            x, y = piece.x, piece.y
+            print(f"x: {x}, y: {y}")
+            x_i, y_i, non_capture, capture_only = (*move, False, False, False, False)[:4]
+            x_i *= self.square_width
+            y_i *= self.square_height
+            print(f"xi: {x_i} yi: {y_i}")
+            while True:
+                x += x_i
+                y += y_i
+
+                # break if x or y exceeds the boarder
+                if (x > self.square_width*(self.board_collums-1)+self.board_x or x < 0+self.board_x 
+                    or y > self.square_height*(self.board_rows-1)+self.board_y or y < 0+self.board_y): break
+                # break if piece at x, y is a piece of the same color
+                # add move to valid_moves then break if piece at x, y is of a different color and the move is not non_capture only
+                # add move to valid_moves if space is open (maybe base case) and move is not capture_only
+                print(x, y)
+                if not piece.recursive_move:
+                    break
+        print("\n\n")
 
 
 class Piece:
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
         self.image = pygame.transform.scale(pygame.image.load(image).convert_alpha(), (desired_image_width, desired_image_height))
-        self.piece = piece
+        self.piece_name = piece_name
         self.x = x
         self.y = y
         self.recursive_move = False
         self.move_set = []
-
-    def compute_valid_moves(self, square_cords):
-        valid_moves = {}
-        for move in self.move_set:
-            x_i, y_i, non_capture, capture_only = (*move, False, False, False, False)[:4]
             
-
 class Pawn(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [ # non_capture, capture (only)
             (0,1,True),
             (-1,1,False,True),
@@ -212,8 +234,8 @@ class Pawn(Piece):
         ]
 
 class Bishop(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,-1),
@@ -223,8 +245,8 @@ class Bishop(Piece):
         ]
 
 class Knight(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [
             (-1,2),
             (-1,-2),
@@ -237,8 +259,8 @@ class Knight(Piece):
         ]
 
 class Rook(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,0),
@@ -248,8 +270,8 @@ class Rook(Piece):
         ]
 
 class Queen(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.recursive_move = True
         self.move_set = [
             (-1,0),
@@ -264,8 +286,8 @@ class Queen(Piece):
         ]
 
 class King(Piece):
-    def __init__(self, piece, image, desired_image_width, desired_image_height, x, y):
-        super().__init__(piece, image, desired_image_width, desired_image_height, x, y)
+    def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
+        super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
         self.move_set = [
             (-1,0),
             (1,0),

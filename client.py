@@ -44,7 +44,6 @@ class Client:
                     raise Exception
                 elif "success" in data:
                     print(data["success"])
-                    print(data)
                 else:
                     raise Exception
                 return data
