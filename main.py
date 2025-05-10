@@ -37,7 +37,7 @@ class Game:
                         break
                     elif clicked_square and self.board.squares[clicked_square]["piece"]:
                         self.board.selected = clicked_square
-                        self.board.compute_valid_moves(self.board.squares[clicked_square]["piece"])
+                        self.board.valid_moves = self.board.compute_valid_moves(self.board.squares[clicked_square]["piece"])
                     else:
                         self.board.selected = None
                 elif event.type == pygame.KEYUP:
@@ -60,6 +60,7 @@ class Game:
         board = Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"])
         board.turn = self.client_result["turn"]
         board.flipped = not self.client_result["turn"]
+        board.color = "w" if board.turn else "b"
         return board
         
   
@@ -69,6 +70,8 @@ class Board:
         self.main = main
         self.client = client
         self.turn = None
+        self.valid_moves = set()
+        self.color = None
 
         # Board
         self.board_x = 0
@@ -163,13 +166,23 @@ class Board:
         return (self.board_width-x, self.board_height-y)
 
     def move(self, to_square, user_move=False):
-        if to_square == self.selected:
-            self.selected = None
-            return False
         x, y = to_square
 
-        selected_piece = self.squares[self.selected]["piece"] # temp store the selected piece
+        if to_square == self.selected:
+            self.selected = None
+            self.valid_moves = set()
+            return False
+
+        selected_piece = self.squares[self.selected]["piece"]
+
+        if selected_piece.piece_name[-1] == "p" and selected_piece.first_move:
+            selected_piece.first_move = False
+            selected_piece.move_set.remove((0,2,True))
+        else:
+            self.compute_valid_moves(selected_piece)
         
+        if to_square not in self.valid_moves and user_move: return False
+
         if user_move:
             # send a move request to the server
             data = {"username": self.client.username, "task": "move", "to_user": self.client.to_user, "move": (self.selected, to_square)}
@@ -187,32 +200,47 @@ class Board:
         return True
     
     def get_piece_at_coord(self, coord):
-        pass
+        return self.squares[coord]["piece"]
     
-    def compute_valid_moves(self, piece):
-        valid_moves = {}
-        print(piece.piece_name)
-        for move in piece.move_set:
-            x, y = piece.x, piece.y
-            print(f"x: {x}, y: {y}")
+    def get_piece_color(self, piece):
+        return piece.piece_name[0]
+    
+    def compute_valid_moves(self, from_piece):
+        valid_moves = set()
+        from_piece_color = self.get_piece_color(from_piece)
+        if from_piece_color != self.color:
+            return valid_moves
+        for move in from_piece.move_set:
+            x, y = from_piece.x, from_piece.y
             x_i, y_i, non_capture, capture_only = (*move, False, False, False, False)[:4]
+            # Swap increment direction if color white move because different side of board has a different direction for forward
+            x_i = -x_i if from_piece_color == "w" else x_i
+            y_i = -y_i if from_piece_color == "w" else y_i
             x_i *= self.square_width
             y_i *= self.square_height
-            print(f"xi: {x_i} yi: {y_i}")
             while True:
                 x += x_i
                 y += y_i
 
                 # break if x or y exceeds the boarder
                 if (x > self.square_width*(self.board_collums-1)+self.board_x or x < 0+self.board_x 
-                    or y > self.square_height*(self.board_rows-1)+self.board_y or y < 0+self.board_y): break
-                # break if piece at x, y is a piece of the same color
-                # add move to valid_moves then break if piece at x, y is of a different color and the move is not non_capture only
-                # add move to valid_moves if space is open (maybe base case) and move is not capture_only
-                print(x, y)
-                if not piece.recursive_move:
+                    or y > self.square_height*(self.board_rows-1)+self.board_y or y < 0+self.board_y): 
                     break
-        print("\n\n")
+                # break if piece at x, y is a piece of the same color
+                to_piece = self.get_piece_at_coord((x, y))
+                if to_piece and self.get_piece_color(from_piece) == self.get_piece_color(to_piece): 
+                    break
+                # add move to valid_moves then break if piece at x, y is of a different color and the move is not non_capture only
+                if to_piece and self.get_piece_color(from_piece) != self.get_piece_color(to_piece) and not non_capture:
+                    valid_moves.add((x, y))
+                    break
+                # add move to valid_moves if space is open (maybe base case) and move is not capture_only
+                if not to_piece and not capture_only:
+                    valid_moves.add((x, y))
+
+                if not from_piece.recursive_move:
+                    break
+        return valid_moves
 
 
 class Piece:
@@ -227,11 +255,13 @@ class Piece:
 class Pawn(Piece):
     def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):
         super().__init__(piece_name, image, desired_image_width, desired_image_height, x, y)
-        self.move_set = [ # non_capture, capture (only)
+        self.move_set = [ # non_capture, capture_only
+            (0,2,True),
             (0,1,True),
             (-1,1,False,True),
             (1,1,False,True)
         ]
+        self.first_move = True
 
 class Bishop(Piece):
     def __init__(self, piece_name, image, desired_image_width, desired_image_height, x, y):

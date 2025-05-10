@@ -74,6 +74,5 @@ class Client:
                     self.main.board.move(to_square)
                 reset = data.get("reset")
                 if reset:
-                    print(f"{self.username} reset")
                     self.main.board = self.main.create_board_instance()
                 time.sleep(1)

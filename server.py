@@ -31,7 +31,6 @@ def handle_task(data, conn):
     task = data["task"]
     username = data["username"]
     if task == "check_move":
-        print("check move")
         move = user_data.get(username, {}).get("move")
         send_data_to_host(conn, {"move": move})
         if move:
