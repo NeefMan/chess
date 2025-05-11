@@ -57,7 +57,7 @@ class Game:
             self.clock.tick(self.settings.fps)
 
     def create_board_instance(self):
-        board = Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"])
+        board = Board(self, self.settings.colors["wheat"], self.settings.colors["brown"], self.client, self.settings.colors["selected_yellow"], self.settings.colors["valid_green"])
         board.turn = self.client_result["turn"]
         board.flipped = not self.client_result["turn"]
         board.color = "w" if board.turn else "b"
@@ -66,7 +66,7 @@ class Game:
   
 
 class Board:
-    def __init__(self, main, light, dark, client, highlighted_color):
+    def __init__(self, main, light, dark, client, highlighted_color, valid_moves_square_color):
         self.main = main
         self.client = client
         self.turn = None
@@ -89,7 +89,8 @@ class Board:
         self.squares = {} # (x, y) : {color, piece[None]}
         self.selected = None
         self.flipped = False # Whether board is displayed from black or whites pov
-        self.square_color_highlighted = highlighted_color
+        self.color_selected_piece = highlighted_color
+        self.color_valid_move_squares = valid_moves_square_color
         
         self.initialize_board()
         self.initalize_pieces(classic_piece_map)
@@ -133,7 +134,13 @@ class Board:
     def display_board(self, screen):
         for key, value in self.squares.items():
             x, y = key
-            color = self.square_color_highlighted if self.selected == (x,y) else value["color"]
+            original_x, original_y = x, y
+        
+            if (x,y) == self.selected:
+                color = self.color_selected_piece
+            else:
+                color = value["color"]
+
             if self.flipped:
                 x, y = self.flip_cords(x, y)
                 x -= self.square_width
@@ -147,6 +154,9 @@ class Board:
             piece = value["piece"]
             if piece:
                 screen.blit(piece.image, (x+self.board_x,y+self.board_y))
+
+            if (original_x,original_y) in self.valid_moves:
+                pygame.draw.circle(screen, (0,0,0), (x+self.board_x+self.square_width//2, y+self.board_y+self.square_height//2), (self.square_width/2)*0.9, width=3)
 
     def get_square_clicked(self, pos):
         x, y = pos
@@ -197,6 +207,7 @@ class Board:
         self.squares[to_square]["piece"] = selected_piece
         self.selected = None
         self.turn = not self.turn
+        self.valid_moves = set()
         return True
     
     def get_piece_at_coord(self, coord):
@@ -343,6 +354,7 @@ class Settings:
             "wheat": (227,193,111),
             "white": (255,255,255),
             "selected_yellow": (219,219,83),
+            "valid_green": (136,212,89),
         }
         self.fps = 30
 
