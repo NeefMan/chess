@@ -74,10 +74,10 @@ class Board:
         self.color = None
 
         # Board
-        self.board_x = 0
-        self.board_y = 0
-        self.board_width = 700
-        self.board_height = 700
+        self.board_x = 30
+        self.board_y = 25
+        self.board_width = 600
+        self.board_height = 600
         self.board_rows = 8
         self.board_collums = 8
         self.board_color_light = light
@@ -98,12 +98,12 @@ class Board:
     def initialize_board(self):
         color1 = self.board_color_light
         color2 = self.board_color_dark
-        for y in range(0, self.square_height*self.board_rows, self.square_height):
-            for x in range(0, self.square_width*self.board_collums, self.square_width):
+        for y in range(0, self.board_rows):
+            for x in range(0, self.board_collums):
                 self.squares[(x,y)] = {}
                 self.squares[(x,y)]["color"] = color1
                 self.squares[(x,y)]["piece"] = None
-                if x < (self.square_width * self.board_collums) - self.square_width:
+                if x < self.board_collums-1:
                     color1, color2 = color2, color1
     
     def initalize_pieces(self, imported_piece_map):
@@ -124,8 +124,6 @@ class Board:
         
         for key, value in imported_piece_map.piece_map.items():
             x, y = key
-            x *= self.square_width
-            y *= self.square_height
             
             piece_class, file_name = piece_name_abbreviation_map[value]
             self.squares[(x,y)]["piece"] = piece_class(value, f"images/pieces/{file_name}", self.square_width, self.square_height, x, y)
@@ -143,37 +141,37 @@ class Board:
 
             if self.flipped:
                 x, y = self.flip_cords(x, y)
-                x -= self.square_width
-                y -= self.square_height
+
             pygame.draw.rect(
                 screen, 
                 color, 
-                pygame.rect.Rect(x+self.board_x, y+self.board_y, self.square_width, self.square_height)
+                pygame.rect.Rect((x*self.square_width)+self.board_x, (y*self.square_height)+self.board_y, self.square_width, self.square_height)
                 )
             
             piece = value["piece"]
             if piece:
-                screen.blit(piece.image, (x+self.board_x,y+self.board_y))
+                screen.blit(piece.image, ((x*self.square_width)+self.board_x,(y*self.square_height)+self.board_y))
 
             if (original_x,original_y) in self.valid_moves:
-                pygame.draw.circle(screen, (0,0,0), (x+self.board_x+self.square_width//2, y+self.board_y+self.square_height//2), (self.square_width/2)*0.9, width=3)
+                pygame.draw.circle(screen, (0,0,0), ((x*self.square_width)+self.board_x+self.square_width//2, (y*self.square_height)+self.board_y+self.square_height//2), (self.square_width/2)*0.9, width=2)
 
     def get_square_clicked(self, pos):
         x, y = pos
-        square_size = self.board_width / self.board_collums
         x -= self.board_x
         y -= self.board_y
+
+        x = x // self.square_width
+        y = y // self.square_height
+
         if self.flipped:
             x, y = self.flip_cords(x, y)
         
-        x = int(x / square_size) * self.square_width
-        y = int(y / square_size) * self.square_height
-        if x < 0 or x > self.board_width-self.square_width or y < 0 or y > self.board_height-self.square_height:
+        if x < 0 or x > self.board_collums-1 or y < 0 or y > self.board_rows-1:
             return None
         return (x,y)
     
     def flip_cords(self, x, y):
-        return (self.board_width-x, self.board_height-y)
+        return self.board_collums-x-1, self.board_rows-y-1
 
     def move(self, to_square, user_move=False):
         x, y = to_square
@@ -227,15 +225,14 @@ class Board:
             # Swap increment direction if color white move because different side of board has a different direction for forward
             x_i = -x_i if from_piece_color == "w" else x_i
             y_i = -y_i if from_piece_color == "w" else y_i
-            x_i *= self.square_width
-            y_i *= self.square_height
+            
             while True:
                 x += x_i
                 y += y_i
 
                 # break if x or y exceeds the boarder
-                if (x > self.square_width*(self.board_collums-1)+self.board_x or x < 0+self.board_x 
-                    or y > self.square_height*(self.board_rows-1)+self.board_y or y < 0+self.board_y): 
+                if (x > self.board_collums-1 or x < 0
+                    or y > self.board_rows-1 or y < 0): 
                     break
                 # break if piece at x, y is a piece of the same color
                 to_piece = self.get_piece_at_coord((x, y))
@@ -347,8 +344,8 @@ import json
 
 class Settings:
     def __init__(self):
-        self.screen_width = 700
-        self.screen_height = 700
+        self.screen_width = 775
+        self.screen_height = 725
         self.colors = {
             "brown": (184,139,74),
             "wheat": (227,193,111),
