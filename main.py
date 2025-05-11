@@ -74,10 +74,10 @@ class Board:
         self.color = None
 
         # Board
-        self.board_x = 30
-        self.board_y = 25
-        self.board_width = 600
-        self.board_height = 600
+        self.board_x = 0
+        self.board_y = 0
+        self.board_width = 700
+        self.board_height = 700
         self.board_rows = 8
         self.board_collums = 8
         self.board_color_light = light
@@ -344,8 +344,8 @@ import json
 
 class Settings:
     def __init__(self):
-        self.screen_width = 775
-        self.screen_height = 725
+        self.screen_width = 700
+        self.screen_height = 700
         self.colors = {
             "brown": (184,139,74),
             "wheat": (227,193,111),
