@@ -8,7 +8,7 @@ import random
 HOST = "0.0.0.0"
 PORT = 5000
 END_DELIMETER = "*&^%"
-TIMEOUT_DUR = 15
+TIMEOUT_DUR = 120
 
 user_data = {} # {"username": {"connection": connection, "move": None, "turn": "not_set", "addr": addr, "timestamp": timestamp}}
 shutdown_event = threading.Event()  # Thread-safe shutdown flag

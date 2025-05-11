@@ -10,7 +10,7 @@ class Client:
         self.PORT = 5000
         self.END_DELIMETER = "*&^%"
         self.running = True
-        self.timeout_dur = 20
+        self.timeout_dur = 100
 
 
     def recieve_data(self, conn):
